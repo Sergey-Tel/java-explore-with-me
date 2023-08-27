@@ -16,6 +16,7 @@ import ru.practicum.main_service.event.dto.UpdateEventUserRequest;
 import ru.practicum.main_service.event.enums.EventSort;
 import ru.practicum.main_service.event.enums.EventState;
 import ru.practicum.main_service.event.mapper.EventMapper;
+import ru.practicum.main_service.event.mapper.EventTool;
 import ru.practicum.main_service.event.mapper.LocationMapper;
 import ru.practicum.main_service.event.model.Event;
 import ru.practicum.main_service.event.model.Location;
@@ -47,6 +48,7 @@ public class EventServiceImpl implements EventService {
     private final LocationRepository locationRepository;
     private final EventRepository eventRepository;
     private final EventMapper eventMapper;
+    private final EventTool eventTool;
     private final LocationMapper locationMapper;
 
     @Override
@@ -142,7 +144,7 @@ public class EventServiceImpl implements EventService {
 
         List<Event> events = eventRepository.findAllByInitiatorId(userId, pageable);
 
-        return toEventsShortDto(events);
+        return eventTool.toEventsShortDto(events);
     }
 
     @Override
@@ -266,7 +268,7 @@ public class EventServiceImpl implements EventService {
         Map<Long, Integer> eventsParticipantLimit = new HashMap<>();
         events.forEach(event -> eventsParticipantLimit.put(event.getId(), event.getParticipantLimit()));
 
-        List<EventShortDto> eventsShortDto = toEventsShortDto(events);
+        List<EventShortDto> eventsShortDto = eventTool.toEventsShortDto(events);
 
         if (searchEventParams.getOnlyAvailable()) {
             eventsShortDto = eventsShortDto.stream()
@@ -318,19 +320,6 @@ public class EventServiceImpl implements EventService {
         }
 
         return eventRepository.findAllByIdIn(eventsId);
-    }
-
-    @Override
-    public List<EventShortDto> toEventsShortDto(List<Event> events) {
-        Map<Long, Long> views = statsService.getViews(events);
-        Map<Long, Long> confirmedRequests = statsService.getConfirmedRequests(events);
-
-        return events.stream()
-                .map((event) -> eventMapper.toEventShortDto(
-                        event,
-                        confirmedRequests.getOrDefault(event.getId(), 0L),
-                        views.getOrDefault(event.getId(), 0L)))
-                .collect(Collectors.toList());
     }
 
     private List<EventFullDto> toEventsFullDto(List<Event> events) {

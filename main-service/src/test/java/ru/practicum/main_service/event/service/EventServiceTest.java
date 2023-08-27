@@ -26,6 +26,7 @@ import ru.practicum.main_service.event.enums.EventSort;
 import ru.practicum.main_service.event.enums.EventState;
 import ru.practicum.main_service.event.enums.EventStateAction;
 import ru.practicum.main_service.event.mapper.EventMapperImpl;
+import ru.practicum.main_service.event.mapper.EventTool;
 import ru.practicum.main_service.event.mapper.LocationMapperImpl;
 import ru.practicum.main_service.event.model.Event;
 import ru.practicum.main_service.event.model.Location;
@@ -75,6 +76,9 @@ public class EventServiceTest {
 
     @Mock
     private EventMapperImpl eventMapper;
+
+    @Mock
+    private EventTool eventTool;
 
     @InjectMocks
     private EventServiceImpl eventService;
@@ -467,9 +471,7 @@ public class EventServiceTest {
         public void shouldGet() {
             when(userRepository.findById(event1.getInitiator().getId())).thenReturn(Optional.of(event1.getInitiator()));
             when(eventRepository.findAllByInitiatorId(event1.getInitiator().getId(), pageable)).thenReturn(List.of(event1));
-            when(statsService.getConfirmedRequests(any())).thenReturn(confirmedRequests);
-            when(statsService.getViews(any())).thenReturn(views);
-            when(eventMapper.toEventShortDto(any(), any(), any())).thenReturn(eventShortDto1);
+            when(eventTool.toEventsShortDto(any(List.class))).thenReturn(List.of(eventShortDto1));
 
             List<EventShortDto> eventsShortDto = eventService.getAllEventsByPrivate(event1.getInitiator().getId(), pageable);
 
@@ -477,9 +479,7 @@ public class EventServiceTest {
             assertEquals(eventShortDto1, eventsShortDto.get(0));
 
             verify(eventRepository, times(1)).findAllByInitiatorId(any(), any());
-            verify(statsService, times(1)).getConfirmedRequests(any());
-            verify(statsService, times(1)).getViews(any());
-            verify(eventMapper, times(1)).toEventShortDto(any(), any(), any());
+            verify(eventTool, times(1)).toEventsShortDto(any(List.class));
         }
     }
 
@@ -735,9 +735,7 @@ public class EventServiceTest {
             when(eventRepository.getEventsByPublic(text, List.of(event1.getCategory().getId()), false,
                     event1.getCreatedOn(), event1.getCreatedOn().plusDays(5), 0, 10))
                     .thenReturn(List.of(event1));
-            when(statsService.getViews(any())).thenReturn(views);
-            when(statsService.getConfirmedRequests(any())).thenReturn(confirmedRequests);
-            when(eventMapper.toEventShortDto(any(), any(), any())).thenReturn(eventShortDto1);
+            when(eventTool.toEventsShortDto(any(List.class))).thenReturn(List.of(eventShortDto1));
 
             List<EventShortDto> eventShortsDto = eventService.getEventsByPublic(
                     new SearchEventParams(text, List.of(event1.getCategory().getId()), false, event1.getCreatedOn(), event1.getCreatedOn().plusDays(5), true), EventSort.EVENT_DATE, 0, 10, new MockHttpServletRequest());
@@ -748,9 +746,7 @@ public class EventServiceTest {
 
             verify(eventRepository, times(1))
                     .getEventsByPublic(any(), any(), any(), any(), any(), any(), any());
-            verify(statsService, times(1)).getViews(any());
-            verify(statsService, times(1)).getConfirmedRequests(any());
-            verify(eventMapper, times(1)).toEventShortDto(any(), any(), any());
+            verify(eventTool, times(1)).toEventsShortDto(any(List.class));
         }
 
         @Test

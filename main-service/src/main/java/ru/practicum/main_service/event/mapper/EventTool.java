@@ -28,5 +28,4 @@ public class EventTool {
                         views.getOrDefault(event.getId(), 0L)))
                 .collect(Collectors.toList());
     }
-
 }

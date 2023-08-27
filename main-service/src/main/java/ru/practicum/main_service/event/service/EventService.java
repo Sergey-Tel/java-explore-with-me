@@ -36,6 +36,4 @@ public interface EventService {
     Event getEventById(Long eventId);
 
     List<Event> getEventsByIds(List<Long> eventsId);
-
-    List<EventShortDto> toEventsShortDto(List<Event> events);
 }
